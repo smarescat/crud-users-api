@@ -2,15 +2,22 @@
 
 namespace App\Application;
 
-use App\Application\Requests\CreateUserRequest;
-use App\Application\Resources\UserResponseResource;
 use App\Models\User;
+use App\Application\Requests\CreateUserRequest;
+use App\Utilities\Exceptions\UserExistException;
+use App\Application\Resources\UserResponseResource;
 
 class CreateUserUseCase
 {
     public function execute(CreateUserRequest $request): UserResponseResource
     {
         $passwordHashed = hash('sha256', $request->password);
+
+        $userCheck = User::query()->where('email', '=', $request->email)->first();
+
+        if($userCheck != null) {
+            throw new UserExistException('the email already exist');
+        }
 
         $user = new User();
 
